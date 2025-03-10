@@ -6,34 +6,31 @@ auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
-    data = request.json
-    if not User.validate_username(data['username']):
-        return jsonify({"error": "El usuario no cumple con el formato requerido"}), 400
-    if not User.validate_password(data['password']):
-        return jsonify({"error": "La contraseña no cumple con los requisitos de seguridad"}), 400
-    
-    if User.query.filter_by(email=data['email']).first():
-        return jsonify({"error": "El email ya está registrado"}), 400
-    if User.query.filter_by(username=data['username']).first():
-        return jsonify({"error": "El usuario ya está en uso"}), 400
-    
-    new_user = User(username=data['username'], email=data['email'], role='user')
-    new_user.set_password(data['password'])
-    db.session.add(new_user)
-    db.session.commit()
+  data = request.json
 
-    return jsonify({"message": "Usuario registrado exitosamente"}), 201
+  if User.query.filter_by(username=data['username']).first():
+    return jsonify({"error": "El usuario ya está en uso"}), 400
+
+  if User.query.filter_by(email=data['email']).first():
+    return jsonify({"error": "El email ya está registrado"}), 400
+
+  new_user = User(username=data['username'], email=data['email'], role='user')
+  new_user.set_password(data['password'])
+  db.session.add(new_user)
+  db.session.commit()
+
+  return jsonify({"message": "Usuario registrado exitosamente"}), 201
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    data = request.json
-    user = User.query.filter_by(username=data['username']).first()
-    if not user or not user.check_password(data['password']):
-        return jsonify({"error": "Credenciales inválidas"}), 401
-    
-    access_token = create_access_token(identity={
-        'id': user.id,
-        'username': user.username,
-        'role': user.role
-    })
-    return jsonify({"access_token": access_token}), 200
+  data = request.json
+  user = User.query.filter_by(username=data['username']).first()
+  if not user or not user.check_password(data['password']):
+    return jsonify({"error": "Credenciales inválidas"}), 401
+
+  access_token = create_access_token(identity={
+    'id': user.id,
+    'username': user.username,
+    'role': user.role
+  })
+  return jsonify({"access_token": access_token}), 200
