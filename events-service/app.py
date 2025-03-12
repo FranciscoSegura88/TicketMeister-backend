@@ -21,10 +21,9 @@ def get_events():
         event['_id'] = str(event['_id'])  # Convertir ObjectId a string
     return jsonify(events)
 
-# Ruta para obtener un evento por ID
-@app.route('/events/<id>', methods=['GET'])
+@app.route('/events/<int:id>', methods=['GET'])
 def get_event(id):
-    event = events_collection.find_one({'_id': ObjectId(id)})
+    event = events_collection.find_one({'id': id})  # Busca por el campo 'id'
     if event:
         event['_id'] = str(event['_id'])  # Convertir ObjectId a string
         return jsonify(event)
